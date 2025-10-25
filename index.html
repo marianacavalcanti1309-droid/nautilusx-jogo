@@ -1,13 +1,9 @@
 <section id="jogo-nautilus" style="text-align:center; margin: 40px 0;">
   <h2 style="font-family: 'Poppins', sans-serif; color: #0077b6; margin-bottom: 10px;">
-     Limpe as Águas com o Nautilus-X!
+    💧 Limpe as Águas com o Nautilus-X!
   </h2>
 
-  <button id="startBtn" style="padding:10px 20px; font-size:16px; margin-top:20px; background:#0077b6; color:white; border:none; border-radius:10px; cursor:pointer;">
-    Começar Jogo
-  </button>
-
-  <canvas id="gameCanvas" width="400" height="500" style="border-radius: 20px; background: linear-gradient(#a8e6ff, #d6f7ff); box-shadow: 0 0 15px rgba(0,0,0,0.2); display:none;"></canvas>
+  <canvas id="gameCanvas" width="400" height="500" style="border-radius: 20px; background: linear-gradient(#a8e6ff, #d6f7ff); box-shadow: 0 0 15px rgba(0,0,0,0.2);"></canvas>
   <p id="gameOverMsg" style="display:none; font-family: 'Poppins', sans-serif; color:#023e8a; font-size:18px; margin-top: 15px;"></p>
   <button id="restartBtn" style="display:none; background:#0077b6; color:white; border:none; padding:10px 20px; border-radius:10px; font-family:'Poppins',sans-serif; cursor:pointer;">Jogar Novamente</button>
 
@@ -18,42 +14,52 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    // Player
     const player = { x: 180, y: 440, width: 40, height: 40, speed: 8 };
-
-    // Bolhas
     const bubbles = [];
     let score = 0;
     let missed = 0;
     let gameOver = false;
     let speedMultiplier = 1;
 
-    // Áudio
     const bubbleSound = document.getElementById("bubbleSound");
     const bgMusic = document.getElementById("bgMusic");
     bubbleSound.volume = 0.2;
     bgMusic.volume = 0.3;
 
-    // Player image placeholder
-    const playerImg = new Image();
-    playerImg.src = "https://www.google.com/url?sa=i&url=https%3A%2F%2Fpt.pngtree.com%2Ffreepng%2Fpixel-art-character-boy-waving-his-hand_7325575.html&psig=AOvVaw3D-_ExOhL1bZgh08ZM8usf&ust=1761487448108000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCKjon6DCv5ADFQAAAAAdAAAAABAE"; // troque pela sua imagem se quiser
-
+    // 🔹 Desenhar bonequinho fofo detalhado
     function drawPlayer() {
-      if (playerImg.complete) {
-        ctx.drawImage(playerImg, player.x, player.y, 50, 50);
-      } else {
-        // fallback simples
-        ctx.fillStyle = "#ffcad4";
-        ctx.beginPath();
-        ctx.arc(player.x + 20, player.y + 10, 10, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#f4a261";
-        ctx.fillRect(player.x + 10, player.y + 20, 20, 20);
-        ctx.fillStyle = "#0077b6";
-        ctx.fillRect(player.x + 30, player.y + 25, 25, 5);
-      }
+      // corpo arredondado
+      ctx.fillStyle = "#f4a261";
+      ctx.beginPath();
+      ctx.ellipse(player.x + 20, player.y + 30, 15, 20, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // cabeça
+      ctx.fillStyle = "#ffcad4";
+      ctx.beginPath();
+      ctx.arc(player.x + 20, player.y + 10, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // olhos
+      ctx.fillStyle = "#023e8a";
+      ctx.beginPath();
+      ctx.arc(player.x + 16, player.y + 8, 2, 0, Math.PI * 2);
+      ctx.arc(player.x + 24, player.y + 8, 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // sorriso
+      ctx.strokeStyle = "#023e8a";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(player.x + 20, player.y + 12, 5, 0, Math.PI);
+      ctx.stroke();
+
+      // bastão azul
+      ctx.fillStyle = "#0077b6";
+      ctx.fillRect(player.x + 30, player.y + 25, 25, 5);
     }
 
+    // 🔹 Bolhas fofinhas
     function drawBubble(bubble) {
       const gradient = ctx.createRadialGradient(bubble.x, bubble.y, bubble.size/4, bubble.x, bubble.y, bubble.size);
       gradient.addColorStop(0, "rgba(255, 255, 255, 0.8)");
@@ -80,8 +86,8 @@
       drawPlayer();
       drawScore();
 
-      // Criar bolhas
-      if (Math.random() < 0.05 * speedMultiplier) {
+      // 🔹 Menos bolhas
+      if (Math.random() < 0.02 * speedMultiplier) {
         bubbles.push({ x: Math.random() * 380 + 10, y: 0, size: 8 + Math.random() * 7, speed: 2 * speedMultiplier });
       }
 
@@ -137,18 +143,13 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === "ArrowLeft" && player.x > 0) player.x -= player.speed;
       if (e.key === "ArrowRight" && player.x < canvas.width - player.width - 20) player.x += player.speed;
+      if (!gameOver && bgMusic.paused) bgMusic.play();
     });
 
-    // Botão iniciar
-    document.getElementById("startBtn").addEventListener("click", () => {
-      document.getElementById("startBtn").style.display = "none";
-      canvas.style.display = "block";
-      bgMusic.play();
-      update();
-    });
-
+    update();
   </script>
 </section>
+
 
 
 
