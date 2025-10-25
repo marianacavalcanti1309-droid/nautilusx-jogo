@@ -1,6 +1,6 @@
 <section id="jogo-nautilus" style="text-align:center; margin: 40px 0;">
   <h2 style="font-family: 'Poppins', sans-serif; color: #0077b6; margin-bottom: 10px;">
-    💧 Limpe as Águas com o Nautilus-X!
+   Limpe as Águas com o Nautilus-X!
   </h2>
   <canvas id="gameCanvas" width="400" height="500" style="border-radius: 20px; background: linear-gradient(#a8e6ff, #d6f7ff); box-shadow: 0 0 15px rgba(0,0,0,0.2);"></canvas>
   <p id="gameOverMsg" style="display:none; font-family: 'Poppins', sans-serif; color:#023e8a; font-size:18px; margin-top: 15px;"></p>
@@ -13,34 +13,56 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    const player = { x: 180, y: 440, width: 40, height: 40, speed: 5 };
+    // 🧑‍💻 Player
+    const player = { x: 180, y: 440, width: 40, height: 40, speed: 8 };
+
+    // 🎈 Bolhas
     const bubbles = [];
     let score = 0;
     let missed = 0;
     let gameOver = false;
     let speedMultiplier = 1;
 
+    // 🎵 Áudio
     const bubbleSound = document.getElementById("bubbleSound");
     const bgMusic = document.getElementById("bgMusic");
     bgMusic.volume = 0.3;
-    bgMusic.play();
 
+    let bgStarted = false;
+    document.addEventListener("keydown", () => {
+      if (!bgStarted) {
+        bgMusic.play();
+        bgStarted = true;
+      }
+    });
+
+    // 🖌️ Desenhar player
+    const playerImg = new Image();
+    playerImg.src = "https://i.ibb.co/5jYnGv7/player.png"; // substitua pelo seu PNG se quiser
     function drawPlayer() {
-      // bonequinho fofo com bastão azul
-      ctx.fillStyle = "#ffcad4";
-      ctx.beginPath();
-      ctx.arc(player.x + 20, player.y + 10, 10, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#f4a261";
-      ctx.fillRect(player.x + 10, player.y + 20, 20, 20); // corpo
-
-      ctx.fillStyle = "#0077b6";
-      ctx.fillRect(player.x + 30, player.y + 25, 25, 5); // bastão
+      if (playerImg.complete) {
+        ctx.drawImage(playerImg, player.x, player.y, 50, 50);
+      } else {
+        // fallback simples
+        ctx.fillStyle = "#ffcad4";
+        ctx.beginPath();
+        ctx.arc(player.x + 20, player.y + 10, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#f4a261";
+        ctx.fillRect(player.x + 10, player.y + 20, 20, 20);
+        ctx.fillStyle = "#0077b6";
+        ctx.fillRect(player.x + 30, player.y + 25, 25, 5);
+      }
     }
 
+    // 🫧 Desenhar bolha bonitinha
     function drawBubble(bubble) {
-      ctx.fillStyle = "#0096c7";
+      const gradient = ctx.createRadialGradient(bubble.x, bubble.y, bubble.size/4, bubble.x, bubble.y, bubble.size);
+      gradient.addColorStop(0, "rgba(255, 255, 255, 0.8)");
+      gradient.addColorStop(0.5, "rgba(0, 150, 199, 0.6)");
+      gradient.addColorStop(1, "rgba(0, 150, 199, 0.3)");
+
+      ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.arc(bubble.x, bubble.y, bubble.size, 0, Math.PI * 2);
       ctx.fill();
@@ -61,22 +83,24 @@
       drawScore();
 
       // Criar novas bolhas
-      if (Math.random() < 0.03 * speedMultiplier) {
-        bubbles.push({ x: Math.random() * 380 + 10, y: 0, size: 10 + Math.random() * 5, speed: 2 * speedMultiplier });
+      if (Math.random() < 0.05 * speedMultiplier) { // aumenta quantidade
+        bubbles.push({ x: Math.random() * 380 + 10, y: 0, size: 8 + Math.random() * 7, speed: 2 * speedMultiplier });
       }
 
       // Atualizar bolhas
       for (let i = 0; i < bubbles.length; i++) {
         const b = bubbles[i];
         b.y += b.speed;
+        b.x += Math.sin(b.y / 20) * 1; // movimento suave lateral
         drawBubble(b);
 
-        // Verifica se o jogador pegou
+        // Colisão com player
         if (b.y > player.y && b.x > player.x && b.x < player.x + player.width + 30) {
           bubbles.splice(i, 1);
           score++;
+          bubbleSound.volume = 0.2;
           bubbleSound.play();
-          if (score % 10 === 0) speedMultiplier += 0.2; // aumentar dificuldade
+          if (score % 10 === 0) speedMultiplier += 0.2;
           i--;
         } else if (b.y > 500) {
           bubbles.splice(i, 1);
@@ -85,7 +109,6 @@
         }
       }
 
-      // Fim do jogo
       if (missed >= 5) {
         endGame();
       } else {
@@ -125,3 +148,5 @@
     update();
   </script>
 </section>
+
+
