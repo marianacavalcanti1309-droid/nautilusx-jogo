@@ -1,0 +1,127 @@
+<section id="jogo-nautilus" style="text-align:center; margin: 40px 0;">
+  <h2 style="font-family: 'Poppins', sans-serif; color: #0077b6; margin-bottom: 10px;">
+    💧 Limpe as Águas com o Nautilus-X!
+  </h2>
+  <canvas id="gameCanvas" width="400" height="500" style="border-radius: 20px; background: linear-gradient(#a8e6ff, #d6f7ff); box-shadow: 0 0 15px rgba(0,0,0,0.2);"></canvas>
+  <p id="gameOverMsg" style="display:none; font-family: 'Poppins', sans-serif; color:#023e8a; font-size:18px; margin-top: 15px;"></p>
+  <button id="restartBtn" style="display:none; background:#0077b6; color:white; border:none; padding:10px 20px; border-radius:10px; font-family:'Poppins',sans-serif; cursor:pointer;">Jogar Novamente</button>
+
+  <audio id="bubbleSound" src="https://cdn.pixabay.com/download/audio/2022/03/22/audio_05b5db4e44.mp3?filename=water-bubble-112941.mp3"></audio>
+  <audio id="bgMusic" src="https://cdn.pixabay.com/download/audio/2023/03/20/audio_7077a650d1.mp3?filename=relaxing-water-sound-14340.mp3" loop></audio>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const player = { x: 180, y: 440, width: 40, height: 40, speed: 5 };
+    const bubbles = [];
+    let score = 0;
+    let missed = 0;
+    let gameOver = false;
+    let speedMultiplier = 1;
+
+    const bubbleSound = document.getElementById("bubbleSound");
+    const bgMusic = document.getElementById("bgMusic");
+    bgMusic.volume = 0.3;
+    bgMusic.play();
+
+    function drawPlayer() {
+      // bonequinho fofo com bastão azul
+      ctx.fillStyle = "#ffcad4";
+      ctx.beginPath();
+      ctx.arc(player.x + 20, player.y + 10, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#f4a261";
+      ctx.fillRect(player.x + 10, player.y + 20, 20, 20); // corpo
+
+      ctx.fillStyle = "#0077b6";
+      ctx.fillRect(player.x + 30, player.y + 25, 25, 5); // bastão
+    }
+
+    function drawBubble(bubble) {
+      ctx.fillStyle = "#0096c7";
+      ctx.beginPath();
+      ctx.arc(bubble.x, bubble.y, bubble.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "#023e8a";
+      ctx.font = "16px Poppins";
+      ctx.fillText(`💧 Pontos: ${score} | ❌ Perdidos: ${missed}`, 10, 20);
+    }
+
+    function update() {
+      if (gameOver) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawPlayer();
+      drawScore();
+
+      // Criar novas bolhas
+      if (Math.random() < 0.03 * speedMultiplier) {
+        bubbles.push({ x: Math.random() * 380 + 10, y: 0, size: 10 + Math.random() * 5, speed: 2 * speedMultiplier });
+      }
+
+      // Atualizar bolhas
+      for (let i = 0; i < bubbles.length; i++) {
+        const b = bubbles[i];
+        b.y += b.speed;
+        drawBubble(b);
+
+        // Verifica se o jogador pegou
+        if (b.y > player.y && b.x > player.x && b.x < player.x + player.width + 30) {
+          bubbles.splice(i, 1);
+          score++;
+          bubbleSound.play();
+          if (score % 10 === 0) speedMultiplier += 0.2; // aumentar dificuldade
+          i--;
+        } else if (b.y > 500) {
+          bubbles.splice(i, 1);
+          missed++;
+          i--;
+        }
+      }
+
+      // Fim do jogo
+      if (missed >= 5) {
+        endGame();
+      } else {
+        requestAnimationFrame(update);
+      }
+    }
+
+    function endGame() {
+      gameOver = true;
+      bgMusic.pause();
+      document.getElementById("gameOverMsg").style.display = "block";
+      document.getElementById("restartBtn").style.display = "inline-block";
+      document.getElementById("gameOverMsg").innerHTML = `🌊 Você ajudou a limpar as águas!<br>Pontuação final: <b>${score}</b>`;
+    }
+
+    function restartGame() {
+      score = 0;
+      missed = 0;
+      gameOver = false;
+      speedMultiplier = 1;
+      bubbles.length = 0;
+      document.getElementById("gameOverMsg").style.display = "none";
+      document.getElementById("restartBtn").style.display = "none";
+      bgMusic.currentTime = 0;
+      bgMusic.play();
+      update();
+    }
+
+    document.getElementById("restartBtn").addEventListener("click", restartGame);
+
+    // Controles
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" && player.x > 0) player.x -= player.speed;
+      if (e.key === "ArrowRight" && player.x < canvas.width - player.width - 20) player.x += player.speed;
+    });
+
+    update();
+  </script>
+</section>
